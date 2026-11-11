@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>{{ site_name }} — Upgrade {{ name }}</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0b0810">
+<link rel="icon" type="image/png" href="/favicon-64.png">
+<style>
+html{background:#0b0810}
+body{max-width:480px;margin:0 auto;min-height:100vh;background:#0b0810;color:#f3eef7;font-family:'DM Sans',system-ui,sans-serif;padding:22px 18px 40px;box-sizing:border-box}
+h1{font-size:20px;margin:10px 0 4px;color:#ffc83d}
+.sub{font:12px 'DM Mono',monospace;color:#9d93a6;margin-bottom:18px}
+.box{background:#141019;border:1px solid #2a2030;border-radius:14px;padding:16px;margin-bottom:16px}
+.label{font:700 11px 'DM Mono',monospace;letter-spacing:1.5px;color:#9d93a6;margin:6px 0 8px;display:block}
+select,input{width:100%;padding:12px;background:#0b0810;color:#fff;border:1px solid #2a2030;border-radius:10px;font:14px 'DM Mono',monospace;box-sizing:border-box;margin-bottom:12px}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;background:linear-gradient(110deg,#ff5a5f,#ffc83d);color:#1a0f00;font:800 13px 'DM Mono',monospace;letter-spacing:1.5px;cursor:pointer}
+.bkash{font:800 24px 'DM Mono',monospace;color:#e2136e;letter-spacing:1px}
+.msg{padding:12px;border-radius:10px;margin-bottom:14px;font-size:14px}
+.ok{background:#12301c;color:#7ef0a6}.err{background:#3a1218;color:#ff9aa2}
+.hist{font:12px 'DM Mono',monospace;padding:8px 0;border-bottom:1px solid #2a2030}
+a{color:#ffc83d;text-decoration:none}
+</style>
+</head>
+<body>
+<a href="/dashboard">← DASHBOARD</a>
+<h1>UPGRADE PLAN</h1>
+<div class="sub">{{ name }} • Current: {{ PLANS.get(current_plan, PLANS['256']).label }}</div>
+
+{% if error %}<div class="msg err">{{ error }}</div>{% endif %}
+{% if sent %}<div class="msg ok">Payment info pathano hoyeche. Admin verify korle plan active hobe.</div>{% endif %}
+
+{% if paid_plans %}
+<form method="POST" action="/server/{{ name }}/order">
+  <span class="label">PLAN SELECT</span>
+  <select name="plan" required>
+    {% for p in paid_plans %}
+    <option value="{{ p.id }}" {% if p.id == selected %}selected{% endif %}>{{ p.label }} — {% if p.price %}৳{{ p.price }}{% else %}দাম সেট হয়নি{% endif %}</option>
+    {% endfor %}
+  </select>
+
+  <div class="box">
+    <span class="label">PAYMENT — bKash SEND MONEY</span>
+    <div class="bkash">{{ bkash }}</div>
+    <div style="font-size:13px;color:#9d93a6;margin-top:8px">Upore ei number e bKash theke Send Money korun. Tarpor niche apnar bKash number ar TrxID din.</div>
+  </div>
+
+  <span class="label">APNAR bKash NUMBER</span>
+  <input name="sender" placeholder="01XXXXXXXXX" inputmode="numeric" maxlength="11" required>
+  <span class="label">TRANSACTION ID (TrxID)</span>
+  <input name="trx" placeholder="e.g. 8ABC123XYZ" maxlength="20" required>
+  <button class="btn" type="submit">PAYMENT SUBMIT</button>
+</form>
+{% else %}
+<div class="box">Ekhono kono paid plan er daam set kora hoyni. Admin er sathe jogajog korun.</div>
+{% endif %}
+
+{% if history %}
+<h1 style="font-size:16px;margin-top:26px">PAYMENT HISTORY</h1>
+{% for o in history %}
+<div class="hist">{{ o.created[:10] }} • {{ PLANS.get(o.plan).label }} • TrxID {{ o.trx }} • <b>{{ o.status|upper }}</b></div>
+{% endfor %}
+{% endif %}
+</body>
+</html>
